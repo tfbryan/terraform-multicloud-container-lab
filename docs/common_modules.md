@@ -2,15 +2,15 @@
 Cross-cloud common modules reside under terraform/modules/common
 
 ## Common Naming Module
-Because certain resources have different naming requirements, the common module consumes name-related metadata and returns resource specific structured names.
+Because certain resources have different naming requirements, the common module consumes name-related metadata and returns resource-specific structured names.
 
 The naming module resides at terraform/modules/common/naming
 
 - Name segments should be controlled and validated as much as possible
-- Name component segements should be minimal length and still provide value
-- Naming module uses inferred naming profiles to determine which name structure to return
-- Disclaimer: Naming module does its best to minimize name length but is not full tested against all cloud provider resource types and makes no claims to be fully compatible with all cloud resources. Provider resource modules will be responsible for owning its own name restrictions.
-  - If name length is exceeded, the caller should try shortening the `type` they are passing, review and shorten the defined `project.code`, consider removing `random_suffix` "if used" and "if possible", or consider adding `compact = true` for the affected resouce.
+- Name component segments should be minimal in length while still providing value
+- The naming module uses inferred naming profiles to determine which name structure to return
+- Disclaimer: The naming module does its best to minimize name length but is not fully tested against all cloud provider resource types and makes no claims to be fully compatible with all cloud resources. Provider resource modules will be responsible for owning their own name restrictions.
+  - If name length is exceeded, the caller should try shortening the `type` they are passing, review and shorten the defined `project.code`, consider removing `random_suffix` "if used" and "if possible," or consider adding `compact = true` for the affected resource.
 
 Supported name profiles are inferred from the request:
 
@@ -92,7 +92,7 @@ The caller/root validates context objects and catalogs. The naming module valida
 - instance is required
   - instance: exactly two digits, 01-99
   - Caller owns instance allocation
-- type is required, but not rendered. can use ec2, or vm
+- type is required but not rendered; it can contain values such as `ec2` or `vm`
 - compact: is not rendered
 - random_suffix: is not rendered
 - global: is not rendered; compute names always include the provider-local region ID
@@ -110,12 +110,12 @@ When random_suffix = true
 
 ### Responsibility Boundary
 #### Caller owns:
-- Resolving authoritve context objects
+- Resolving authoritative context objects
 - Validating context object shape and approved catalog values in caller/root `variables.tf` files
 - General-resource type
 - Compute role
 - Compute instance allocation
-- Requesting compact or randmon_suffix
+- Requesting compact or random_suffix
 #### Naming Module owns:
 - Selecting naming behavior
 - Rendering the name
@@ -128,4 +128,4 @@ When random_suffix = true
 - Resource counts or for_each logic
 - General-resource ordinal numbering
 - Provider-specific resource catalogs
-- Silent runcation or hashing
+- Silent truncation or hashing

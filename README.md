@@ -1,9 +1,9 @@
 # Terraform Multi-cloud Container Lab
 
 ## Objective
-Demonstrate a containerized application independently deployed into both AWS and Azure, wiith each cloud able to serve the application if the other cloud becomes unavailable. Infrastructure is deployed with Terraform, global traffic management avoids introducing unnecessary single-cloud dependency.
+Demonstrate a containerized application independently deployed into both AWS and Azure, with each cloud able to serve the application if the other cloud becomes unavailable. Infrastructure is deployed with Terraform, and global traffic management avoids introducing unnecessary single-cloud dependency.
 
-Cloud providers have many service offerings that allow many different architectual designs that can serve the same application. This exercise is meant to illustrate different single points of failure (failure domains) and how to overcome them using a classic infrastrucutre archecture. Obviously, care should always be taken to evaluate actual application requirements, business requirements, security requirements, contractual service level aggreement (SLA) and Recovery Time Objective (RTO), as well as expected traffic load, and budget. Answering those questions will start to define the preferred implementation.
+Cloud providers have many service offerings that allow many different architectural designs to serve the same application. This exercise is meant to illustrate different single points of failure (failure domains) and how to overcome them using a classic infrastructure architecture. Obviously, care should always be taken to evaluate actual application requirements, business requirements, security requirements, contractual service level agreement (SLA), and Recovery Time Objective (RTO), as well as expected traffic load and budget. Answering those questions will help define the preferred implementation.
 
 ```mermaid
 %%{init: {'themeVariables': {'useGradient': false}}}%%
@@ -32,23 +32,23 @@ flowchart TB
     CA --> COSMOS[Cosmos DB]
 ```
 ### What's not the objective?
-In this exercise, I'm not focusing on full perimeter security for the application such as WAF, DDOS, Rate-limiting, etc. Remember, this is just a simple multi-cloud implementation project.
+In this exercise, I'm not focusing on full perimeter security for the application such as WAF, DDoS, rate-limiting, etc. Remember, this is just a simple multi-cloud example project.
 
 I'm also not focusing on a fully distributed data layer. Honestly, that is probably worth implementing within its own dedicated project. Fully distributed data layers can be complex and expensive. They require at least 3 distinct hosting platforms with secure and highly-available, low-latency, inter-connectivity in order to achieve quorum.
 
 ## Target Failure Domains
 The list below describes intended outcomes, not implemented or verified coverage. Infrastructure and resiliency tests are not complete. Each level of resiliency can reduce risk, but also increases cost to achieve and maintain.
 
-- [ ] Application level resiliency
+- [x] Application level resiliency
   - AWS ECS Fargate and Azure Container Apps allow multiple instances of the container application to be running, which helps protect against single points of failure at the container/application level.
-- [ ] Service level resilency
-  - Running containers in multiple zones helps protect against service level failures as well as complete zone level failures.
-- [ ] Geographic level resiliency
-  - Regional diversity, whether implemented within a single provider, or across multiple providers, helps protect against reagional level failures. East/West isolation makes the most sense here. I'd much rather see additional latency impact the application over total failure because of region overlap between the providers.
-- [ ] Provider level resiliency
-  - Multi-cloud providers protect against complete provider failure. This implementation is using single-region for each provider and that creates a joint failure domain where a regional outage is also considered a provider outage. You could avoid that joiint failure domain by implementing multiple regions for each provider, but at that point, your cloud spend is drastically increasig for not that much gain in my opinion. If not implementing multiple providers, you should absolutely consider multi-region within your provider of choice.
+- [x] Service level resilience
+  - Running containers in multiple zones helps protect against zone-level service failures.
+- [x] Geographic level resiliency
+  - Regional diversity, whether implemented within a single provider or across multiple providers, helps protect against regional-level failures. East/West isolation makes the most sense here. I'd much rather see additional latency impact the application than total failure due to region overlap between the providers.
+- [x] Provider level resiliency
+  - Multi-cloud providers protect against complete provider failure. This implementation uses a single region for each provider, which creates a joint failure domain where a regional outage is also considered a provider outage. You could avoid that joint failure domain by implementing multiple regions for each provider, but at that point your cloud spend is drastically increasing for limited value in my opinion. However, if not implementing multiple providers, you should absolutely consider multi-region within your provider of choice.
 - [ ] Global DNS / Traffic Manager resiliency
-  - This level of resiliency is not implemented within this project as most Global DNS / Traffic Management solutions (CloudFlare, Akamai Edge DNS, Fastly, etc) are already highly avaiable solutions. Implementing this level of resiliency is possible, and could look something like the following diagram. Obvioulsy the cost continues to increase drastically, and honestly a invalid DNS record update could still completely take you out, which would be incredibly difficult and embarrasing to explain to upper management. Deeper research is crtical for this type of implementation because you would want to deploy a solution that doesn't have its own inner-cloud dependencies for the same cloud providers you are trying to utilize.
+  - This level of resiliency is not implemented in this project because most global DNS / traffic management solutions (Cloudflare, Akamai Edge DNS, Fastly, etc.) are already highly available. Implementing this level of resiliency is possible and could look something like the following diagram. Obviously, the cost continues to increase drastically, and honestly an invalid DNS record update could still completely take you out, which would be incredibly difficult and embarrassing to explain to upper management. Deeper research is critical for this type of implementation because you would want to deploy a solution that doesn't have its own inner-cloud dependencies on the same cloud providers you are trying to utilize.
 
 ```mermaid
 %%{init: {'themeVariables': {'useGradient': false}}}%%
@@ -65,7 +65,7 @@ flowchart TB
 
 
 ## Implementation
-This project is intended to demonstrate terraform infrastructure as code, but we have a couple of classic "chicken and egg" problems that will be resolved through limited manual steps and bootstrapping using local Terraform state. The problem: We cannot use remote state or OIDC authenticated pipelines until certain infrastructure exists. The solution: To resolve this, minimal manual actions will be taken to establish access to the cloud providers, and then some minimal terraform bootstrapping will establish our remote state configurations as well as our offical CI/CD role for the github actions workflow. Eveything beyond that will be created with terraform remote state in place.
+This project is intended to demonstrate Terraform infrastructure as code, but we have a couple of classic "chicken and egg" problems that will be resolved through limited manual steps and bootstrapping using local Terraform state. The problem: We cannot use remote state or OIDC-authenticated pipelines until certain infrastructure exists. The solution: To resolve this, minimal manual actions will be taken to establish access to the cloud providers, and then some minimal Terraform bootstrapping will establish our remote state configurations as well as our official CI/CD role for the GitHub Actions workflow. Everything beyond that will be created with Terraform remote state in place.
 
 ### Day 0
 1. Create/activate the AWS account - Manual
@@ -77,20 +77,20 @@ This project is intended to demonstrate terraform infrastructure as code, but we
    - Establish Microsoft Entra ID administrative access
    - Configure MFA
    - Record the Azure subscription information
-3. Install or update tools "if needed" - Manual
+3. Install or update tools, if needed - Manual
    - Git
-   - Terraform (Needed for initial bootstrap execution)
-   - AWSCLI tools (Needed for initial bootstrap access)
-      - Configure and authenticate AWSCLI tools
-   - AzureCLI tools (Needed for initial bootstrap access)
-      - Configure and authenticate AzureCLI tools
-   - Docker (Needed to develop and test the container app locally)
-4. Create a new github repository (This project requires a Github account because we'll be using github actions workflows) - Manual
-   - Clone the new github repository locally
+   - Terraform (needed for initial bootstrap execution)
+   - AWS CLI tools (needed for initial bootstrap access)
+      - Configure and authenticate AWS CLI tools
+   - Azure CLI tools (needed for initial bootstrap access)
+      - Configure and authenticate Azure CLI tools
+   - Docker (needed to develop and test the container app locally)
+4. Create a new GitHub repository (This project requires a GitHub account because we'll be using GitHub Actions workflows) - Manual
+   - Clone the new GitHub repository locally
    - Create a new branch
 5. Scaffold out the project files and directories (Bash script below)
-6. Create the bootstrap terraform
-7. Execute the bootstrap terraform locally
+6. Create the bootstrap Terraform
+7. Execute the bootstrap Terraform locally
 
 The following bash script will help seed the project files and directories.
 
@@ -110,11 +110,11 @@ done
 # Create the common.tfvars file
 touch "$TF_ROOT/config/common.tfvars"
 
-# Create the github workflow directory and validation yml
+# Create the GitHub workflow directory and validation YAML
 mkdir -p "${PWD}"/.github/workflows
 touch "${PWD}"/.github/workflows/terraform-checks.yml
 
-# Create the provider specific directories and files
+# Create the provider-specific directories and files
 for PROVIDER in "${CLOUD_PROVIDERS[@]}"; do
     mkdir -p "${TF_ROOT}"/bootstrap/"${PROVIDER}"
     mkdir -p "${TF_ROOT}"/platform/"${PROVIDER}"
@@ -126,11 +126,11 @@ for PROVIDER in "${CLOUD_PROVIDERS[@]}"; do
     touch "${TF_ROOT}"/modules/"${PROVIDER}"/bootstrap/{variables.tf,outputs.tf,locals.tf,data.tf,state.tf,oidc.tf,auth.tf}
     touch "${TF_ROOT}"/modules/"${PROVIDER}"/{network,containers,data,observability}/{variables.tf,outputs.tf,locals.tf,data.tf,main.tf}
 
-    # Creat the provider specific github workflow yml files
+    # Create the provider-specific GitHub workflow YAML files
     touch "${PWD}"/.github/workflows/terraform-"${PROVIDER}".yml
 done
 
-# Create common modules and seed the terraform files
+# Create common modules and seed the Terraform files
     mkdir -p "${TF_ROOT}"/modules/common/naming
     touch "${TF_ROOT}"/modules/common/naming/{variables.tf,outputs.tf,locals.tf,main.tf}
 ```

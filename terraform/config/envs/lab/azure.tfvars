@@ -14,6 +14,6 @@ azure_region = {
 }
 
 cloud = {
-  name = "Microsoft Azure"
+  name = "azure"
   code = "az"
 }

@@ -14,6 +14,6 @@ aws_region = {
 }
 
 cloud = {
-  name = "Amazon Web Services"
+  name = "aws"
   code = "aw"
 }

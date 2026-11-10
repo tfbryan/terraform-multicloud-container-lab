@@ -67,6 +67,11 @@ flowchart TB
 ## Implementation
 This project is intended to demonstrate Terraform infrastructure as code, but we have a couple of classic "chicken and egg" problems that will be resolved through limited manual steps and bootstrapping using local Terraform state. The problem: We cannot use remote state or OIDC-authenticated pipelines until certain infrastructure exists. The solution: To resolve this, minimal manual actions will be taken to establish access to the cloud providers, and then some minimal Terraform bootstrapping will establish our remote state configurations as well as our official CI/CD role for the GitHub Actions workflow. Everything beyond that will be created with Terraform remote state in place.
 
+### Terraform State Design
+Bootstrap state remains local because bootstrap creates the remote backends. Platform state is stored remotely, with AWS state storage scoped to this project and environment and Azure storage provisioned for the corresponding project and environment. State keys follow `<project>/<environment>/<cloud>/<stack>.tfstate`, for example `mc/lab/aws/platform.tfstate`. The cloud and stack components keep keys self-describing and allow additional roots to use separate state files.
+
+Backend keys are selected during `terraform init` through backend configuration; Terraform backend blocks cannot interpolate variables or locals. The GitHub workflow supplies the environment-specific key and backend identifiers. See the [implementation plan](docs/implementation_plan.md#terraform-state-design) for access controls, recovery, and the alternative shared-bucket design.
+
 ### Day 0
 1. Create/activate the AWS account - Manual
    - Establish administrative access

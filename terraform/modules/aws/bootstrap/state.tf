@@ -1,7 +1,7 @@
 module "aws_state_bucket_name" {
-  source       = "../../common/naming"
-  name_context = var.name_context
+  source = "../../common/naming"
 
+  name_context  = var.name_context
   type          = "s3"
   descriptor    = "tfstate"
   random_suffix = true

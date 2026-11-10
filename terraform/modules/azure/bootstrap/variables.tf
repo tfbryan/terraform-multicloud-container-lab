@@ -26,6 +26,16 @@ variable "name_context" {
   })
 }
 
+variable "github_owner" {
+  description = "The GitHub organization or owner of the repository"
+  type        = string
+}
+
+variable "github_repo" {
+  description = "The GitHub repository name"
+  type        = string
+}
+
 variable "tags" {
   description = "Metadata key/values"
   type        = map(string)
